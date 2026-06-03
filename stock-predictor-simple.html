@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market Predictor</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -33,6 +34,16 @@
             text-align: center;
             color: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-content {
+            flex: 1;
+            min-width: 300px;
         }
 
         header h1 {
@@ -47,6 +58,32 @@
         header p {
             color: rgba(255, 255, 255, 0.9);
             font-size: 1.1em;
+        }
+
+        .qr-section {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .qr-code-container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        #qrcode {
+            display: inline-block;
+        }
+
+        .qr-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9em;
+            margin-top: 10px;
         }
 
         .search-section {
@@ -352,8 +389,17 @@
         }
 
         @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
             header h1 {
                 font-size: 1.8em;
+            }
+
+            .qr-section {
+                margin-top: 10px;
             }
 
             .search-container {
@@ -378,8 +424,17 @@
 <body>
     <div class="container">
         <header>
-            <h1>📈 Stock Market Predictor</h1>
-            <p>Real-time Market Analysis & Predictions</p>
+            <div class="header-content">
+                <h1>📈 Stock Market Predictor</h1>
+                <p>Real-time Market Analysis & Predictions</p>
+            </div>
+            <div class="qr-section">
+                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 10px; font-size: 0.9em; font-weight: bold;">Share This</p>
+                <div class="qr-code-container">
+                    <div id="qrcode"></div>
+                </div>
+                <p class="qr-label">Scan to open on phone</p>
+            </div>
         </header>
 
         <div class="search-section">
@@ -419,6 +474,19 @@
         const BASE_URL = 'https://www.alphavantage.co/query';
 
         let chart = null;
+
+        // Generate QR Code
+        function generateQRCode() {
+            const url = window.location.href;
+            new QRCode(document.getElementById("qrcode"), {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
 
         async function searchStock(symbol = null) {
             const input = document.getElementById('searchInput');
@@ -696,6 +764,7 @@
 
         // Load AAPL by default
         window.addEventListener('load', () => {
+            generateQRCode();
             searchStock('AAPL');
         });
 
