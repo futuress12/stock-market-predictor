@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market Predictor</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
@@ -182,13 +181,15 @@
             to { transform: rotate(360deg); }
         }
 
-        .error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 2px solid #ef4444;
-            color: #fca5a5;
+        .success-message {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid #10b981;
+            color: #a7f3d0;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
         }
 
         .dashboard {
@@ -258,10 +259,6 @@
 
         .negative {
             color: #ef4444;
-        }
-
-        .neutral {
-            color: #6b7280;
         }
 
         .prediction-value {
@@ -350,23 +347,6 @@
         .risk-high {
             background: #fee2e2;
             color: #991b1b;
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            position: relative;
-            height: 400px;
-        }
-
-        .chart-title {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-            font-weight: bold;
         }
 
         footer {
@@ -461,22 +441,107 @@
         <div id="content"></div>
 
         <footer>
-            <p>&copy; 2024 Stock Market Predictor | Real-time data powered by Alpha Vantage</p>
+            <p>&copy; 2024 Stock Market Predictor | Demo Version with Sample Data</p>
             <div class="disclaimer">
-                ⚠️ Predictions are for educational purposes only. Not financial advice. Always consult a financial advisor before investing.
+                ⚠️ This is a DEMO version using sample data. Predictions are for educational purposes only. Not financial advice. Always consult a financial advisor before investing.
             </div>
         </footer>
     </div>
 
     <script>
-        // Replace with your Alpha Vantage API key
-        const API_KEY = 'demo'; // Use 'demo' for testing, get real key from alphavantage.co
-        const BASE_URL = 'https://www.alphavantage.co/query';
+        // Mock stock data - No API needed!
+        const mockStocks = {
+            'AAPL': {
+                symbol: 'AAPL',
+                price: 195.45,
+                change: 2.15,
+                changePercent: 1.11,
+                timestamp: '2026-06-03'
+            },
+            'GOOGL': {
+                symbol: 'GOOGL',
+                price: 180.32,
+                change: -1.45,
+                changePercent: -0.80,
+                timestamp: '2026-06-03'
+            },
+            'MSFT': {
+                symbol: 'MSFT',
+                price: 445.80,
+                change: 3.50,
+                changePercent: 0.79,
+                timestamp: '2026-06-03'
+            },
+            'AMZN': {
+                symbol: 'AMZN',
+                price: 198.65,
+                change: 5.30,
+                changePercent: 2.73,
+                timestamp: '2026-06-03'
+            },
+            'TSLA': {
+                symbol: 'TSLA',
+                price: 242.15,
+                change: -8.45,
+                changePercent: -3.38,
+                timestamp: '2026-06-03'
+            },
+            'META': {
+                symbol: 'META',
+                price: 512.40,
+                change: 12.60,
+                changePercent: 2.52,
+                timestamp: '2026-06-03'
+            }
+        };
 
-        let chart = null;
+        // Generate random predictions
+        function generatePrediction(symbol, price) {
+            const random = Math.random();
+            const direction = random > 0.5 ? 'UP' : 'DOWN';
+            const confidence = 55 + Math.random() * 35;
+            const volatility = price * (0.02 + Math.random() * 0.05);
+            
+            return {
+                direction,
+                confidence: parseFloat(confidence.toFixed(2)),
+                priceTarget: parseFloat((price + (direction === 'UP' ? volatility : -volatility)).toFixed(2)),
+                supportLevel: parseFloat((price - volatility).toFixed(2)),
+                resistanceLevel: parseFloat((price + volatility).toFixed(2))
+            };
+        }
+
+        // Generate trend analysis
+        function generateTrend() {
+            const base = 150 + Math.random() * 50;
+            const sma7 = base + Math.random() * 20 - 10;
+            const sma14 = base;
+            const sma30 = base - Math.random() * 15;
+            
+            return {
+                sma7: parseFloat(sma7.toFixed(2)),
+                sma14: parseFloat(sma14.toFixed(2)),
+                sma30: parseFloat(sma30.toFixed(2)),
+                trend: sma7 > sma14 ? 'UPTREND' : 'DOWNTREND',
+                strength: parseFloat((Math.abs(sma7 - sma14) / sma14 * 100).toFixed(2))
+            };
+        }
+
+        // Generate volatility
+        function generateVolatility() {
+            const volatilityPercent = 0.5 + Math.random() * 4;
+            const riskLevel = volatilityPercent > 3 ? 'HIGH' : volatilityPercent > 1.5 ? 'MEDIUM' : 'LOW';
+            
+            return {
+                volatility: parseFloat((volatilityPercent / 100).toFixed(4)),
+                volatilityPercent: parseFloat(volatilityPercent.toFixed(2)),
+                riskLevel
+            };
+        }
 
         // Generate QR Code
         function generateQRCode() {
+            document.getElementById("qrcode").innerHTML = '';
             const url = window.location.href;
             new QRCode(document.getElementById("qrcode"), {
                 text: url,
@@ -488,7 +553,7 @@
             });
         }
 
-        async function searchStock(symbol = null) {
+        function searchStock(symbol = null) {
             const input = document.getElementById('searchInput');
             const ticker = symbol || input.value.toUpperCase();
 
@@ -497,152 +562,27 @@
                 return;
             }
 
+            // Check if stock exists in mock data
+            if (!mockStocks[ticker]) {
+                document.getElementById('content').innerHTML = `
+                    <div class="success-message">
+                        ℹ️ This demo uses sample data for: AAPL, GOOGL, MSFT, AMZN, TSLA, META
+                    </div>
+                `;
+                return;
+            }
+
             showLoading();
 
-            try {
-                const [stockData, prediction, trend, volatility] = await Promise.all([
-                    fetchStockData(ticker),
-                    fetchPrediction(ticker),
-                    fetchTrendAnalysis(ticker),
-                    fetchVolatility(ticker)
-                ]);
+            // Simulate API delay
+            setTimeout(() => {
+                const stock = mockStocks[ticker];
+                const prediction = generatePrediction(ticker, stock.price);
+                const trend = generateTrend();
+                const volatility = generateVolatility();
 
-                if (stockData.error) {
-                    showError(stockData.error);
-                } else {
-                    displayDashboard(stockData, prediction, trend, volatility);
-                }
-            } catch (error) {
-                showError('Failed to fetch data. Please check your API key and try again.');
-                console.error(error);
-            }
-        }
-
-        async function fetchStockData(symbol) {
-            try {
-                const response = await fetch(`${BASE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`);
-                const data = await response.json();
-
-                if (!data['Global Quote'] || Object.keys(data['Global Quote']).length === 0) {
-                    return { error: 'Stock not found. Please check the symbol.' };
-                }
-
-                const quote = data['Global Quote'];
-                return {
-                    symbol: quote['01. symbol'],
-                    price: parseFloat(quote['05. price']),
-                    change: parseFloat(quote['09. change']),
-                    changePercent: parseFloat(quote['10. change percent']),
-                    timestamp: quote['07. latest trading day']
-                };
-            } catch (error) {
-                return { error: 'Error fetching stock data' };
-            }
-        }
-
-        async function fetchPrediction(symbol) {
-            try {
-                const response = await fetch(`${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`);
-                const data = await response.json();
-
-                if (!data['Time Series (Daily)']) {
-                    return { error: true };
-                }
-
-                const timeSeries = data['Time Series (Daily)'];
-                const closePrices = Object.values(timeSeries)
-                    .slice(0, 20)
-                    .map(day => parseFloat(day['4. close']));
-
-                const currentPrice = closePrices[0];
-                const sma5 = calculateSMA(closePrices, 5);
-                const sma20 = calculateSMA(closePrices, Math.min(20, closePrices.length));
-
-                const direction = sma5 > sma20 ? 'UP' : 'DOWN';
-                const confidence = Math.min(95, 60 + Math.abs(sma5 - sma20) / currentPrice * 100);
-
-                const volatility = calculateStdDev(closePrices, sma5);
-                const priceTarget = direction === 'UP'
-                    ? currentPrice + volatility
-                    : currentPrice - volatility;
-
-                return {
-                    direction,
-                    confidence: parseFloat(confidence.toFixed(2)),
-                    priceTarget: parseFloat(priceTarget.toFixed(2)),
-                    supportLevel: parseFloat((currentPrice - volatility).toFixed(2)),
-                    resistanceLevel: parseFloat((currentPrice + volatility).toFixed(2))
-                };
-            } catch (error) {
-                return { error: true };
-            }
-        }
-
-        async function fetchTrendAnalysis(symbol) {
-            try {
-                const response = await fetch(`${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`);
-                const data = await response.json();
-
-                if (!data['Time Series (Daily)']) {
-                    return { error: true };
-                }
-
-                const timeSeries = data['Time Series (Daily)'];
-                const prices = Object.values(timeSeries)
-                    .slice(0, 30)
-                    .map(day => parseFloat(day['4. close']));
-
-                const sma7 = calculateSMA(prices, 7);
-                const sma14 = calculateSMA(prices, 14);
-                const sma30 = calculateSMA(prices, Math.min(30, prices.length));
-
-                return {
-                    sma7: parseFloat(sma7.toFixed(2)),
-                    sma14: parseFloat(sma14.toFixed(2)),
-                    sma30: parseFloat(sma30.toFixed(2)),
-                    trend: sma7 > sma14 ? 'UPTREND' : 'DOWNTREND',
-                    strength: parseFloat((Math.abs(sma7 - sma14) / sma14 * 100).toFixed(2))
-                };
-            } catch (error) {
-                return { error: true };
-            }
-        }
-
-        async function fetchVolatility(symbol) {
-            try {
-                const response = await fetch(`${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`);
-                const data = await response.json();
-
-                if (!data['Time Series (Daily)']) {
-                    return { error: true };
-                }
-
-                const timeSeries = data['Time Series (Daily)'];
-                const prices = Object.values(timeSeries)
-                    .slice(0, 20)
-                    .map(day => parseFloat(day['4. close']));
-
-                const mean = prices.reduce((a, b) => a + b) / prices.length;
-                const volatility = calculateStdDev(prices, mean);
-                const volatilityPercent = (volatility / mean) * 100;
-
-                return {
-                    volatility: parseFloat(volatility.toFixed(4)),
-                    volatilityPercent: parseFloat(volatilityPercent.toFixed(2)),
-                    riskLevel: volatilityPercent > 3 ? 'HIGH' : volatilityPercent > 1.5 ? 'MEDIUM' : 'LOW'
-                };
-            } catch (error) {
-                return { error: true };
-            }
-        }
-
-        function calculateSMA(data, period) {
-            return data.slice(0, period).reduce((sum, val) => sum + val, 0) / period;
-        }
-
-        function calculateStdDev(data, mean) {
-            const variance = data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.length;
-            return Math.sqrt(variance);
+                displayDashboard(stock, prediction, trend, volatility);
+            }, 800);
         }
 
         function showLoading() {
@@ -654,14 +594,6 @@
             `;
         }
 
-        function showError(message) {
-            document.getElementById('content').innerHTML = `
-                <div class="error">
-                    <strong>Error:</strong> ${message}
-                </div>
-            `;
-        }
-
         function displayDashboard(stock, prediction, trend, volatility) {
             const isPositive = stock.change >= 0;
             const predictionDirection = prediction.direction === 'UP' ? 'positive' : 'negative';
@@ -669,6 +601,9 @@
             const riskClass = 'risk-' + volatility.riskLevel.toLowerCase();
 
             document.getElementById('content').innerHTML = `
+                <div class="success-message">
+                    ✅ Demo Data Loaded! (Using sample data - No API key needed)
+                </div>
                 <div class="dashboard">
                     <div class="card">
                         <h3><span class="card-icon">💹</span> Current Price</h3>
